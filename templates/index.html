@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .sudoku-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .sudoku-board {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 0;
+            border: 3px solid #333;
+            background: #333;
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1;
+        }
+
+        .cell {
+            background: white;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #333;
+            transition: background-color 0.2s;
+        }
+
+        .cell:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Thicker borders for 3x3 boxes */
+        .cell:nth-child(3n) {
+            border-right: 2px solid #333;
+        }
+
+        .cell:nth-child(n+19):nth-child(-n+27),
+        .cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 2px solid #333;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-size: 18px;
+            margin: 20px 0;
+        }
+
+        .error {
+            text-align: center;
+            color: #e74c3c;
+            margin: 20px 0;
+            padding: 10px;
+            background: #ffeaea;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .cell {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Sudoku Generator</h1>
+        
+        <div class="controls">
+            <button id="generateBtn">Generate New Board</button>
+            <button id="generateMultipleBtn">Generate 5 Boards</button>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">
+            Generating...
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div class="sudoku-container">
+            <div id="sudokuBoard" class="sudoku-board"></div>
+        </div>
+    </div>
+
+    <script>
+        const generateBtn = document.getElementById('generateBtn');
+        const generateMultipleBtn = document.getElementById('generateMultipleBtn');
+        const sudokuBoard = document.getElementById('sudokuBoard');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+
+        function hideError() {
+            error.style.display = 'none';
+        }
+
+        function showError(message) {
+            error.textContent = message;
+            error.style.display = 'block';
+        }
+
+        function renderBoard(board) {
+            sudokuBoard.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.textContent = board[i][j];
+                    sudokuBoard.appendChild(cell);
+                }
+            }
+        }
+
+        async function generateBoard() {
+            hideError();
+            loading.style.display = 'block';
+            generateBtn.disabled = true;
+            generateMultipleBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/generate');
+                if (!response.ok) {
+                    throw new Error('Failed to generate board');
+                }
+                const data = await response.json();
+                renderBoard(data.board);
+            } catch (err) {
+                showError('Error generating board: ' + err.message);
+            } finally {
+                loading.style.display = 'none';
+                generateBtn.disabled = false;
+                generateMultipleBtn.disabled = false;
+            }
+        }
+
+        async function generateMultiple() {
+            hideError();
+            loading.style.display = 'block';
+            generateBtn.disabled = true;
+            generateMultipleBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/generate/5');
+                if (!response.ok) {
+                    throw new Error('Failed to generate boards');
+                }
+                const data = await response.json();
+                // Show the first board, but you could enhance this to cycle through them
+                if (data.boards && data.boards.length > 0) {
+                    renderBoard(data.boards[0]);
+                    alert(`Generated ${data.boards.length} boards! Displaying the first one.`);
+                }
+            } catch (err) {
+                showError('Error generating boards: ' + err.message);
+            } finally {
+                loading.style.display = 'none';
+                generateBtn.disabled = false;
+                generateMultipleBtn.disabled = false;
+            }
+        }
+
+        generateBtn.addEventListener('click', generateBoard);
+        generateMultipleBtn.addEventListener('click', generateMultiple);
+
+        // Generate initial board on page load
+        generateBoard();
+    </script>
+</body>
+</html>
+
+
+
+
