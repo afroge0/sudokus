@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sudoku Generator</title>
     <style>
+        :root {
+            --paper: #faf6ee;
+            --parchment: #e8dcc8;
+            --ink: #2c1810;
+            --sepia: #7a5230;
+            --sepia-light: #c4a882;
+            --clue-color: #1a0f07;
+            --user-color: #5a3e28;
+            --wrong-bg: #f5e6e6;
+            --wrong-color: #8b3a3a;
+            --unique-bg: #e8f0e4;
+            --unique-color: #3a5c2a;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,8 +26,16 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: Georgia, 'Times New Roman', serif;
+            background-color: var(--parchment);
+            background-image:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 31px,
+                    rgba(180, 150, 100, 0.1) 31px,
+                    rgba(180, 150, 100, 0.1) 32px
+                );
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -23,113 +45,459 @@
         }
 
         .container {
-            background: white;
-            border-radius: 20px;
+            background: var(--paper);
+            border-radius: 8px;
             padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
+            border: 1px solid var(--sepia-light);
+            box-shadow: 4px 4px 0 var(--sepia-light);
+            max-width: 1000px;
             width: 100%;
         }
 
+        .boards-row {
+            display: flex;
+            gap: 32px;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .board-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            min-width: 280px;
+        }
+
+        h2 {
+            font-family: 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+            color: var(--ink);
+            font-size: 1.2em;
+            letter-spacing: 0.03em;
+            margin-bottom: 12px;
+        }
+
+        .board-column .sudoku-container {
+            margin-top: 0;
+        }
+
         h1 {
+            font-family: 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
             text-align: center;
-            color: #333;
-            margin-bottom: 30px;
+            color: var(--ink);
+            margin-bottom: 24px;
             font-size: 2.5em;
+            letter-spacing: 0.03em;
+        }
+
+        h1::after {
+            content: '';
+            display: block;
+            width: 80px;
+            margin: 10px auto 0;
+            border-bottom: 1px solid var(--sepia-light);
         }
 
         .controls {
             display: flex;
             gap: 10px;
             justify-content: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
-        }
-
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            font-weight: 600;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
         }
 
         .sudoku-container {
             display: flex;
             justify-content: center;
-            margin-top: 20px;
         }
 
+        .board-column .controls {
+            margin-top: 12px;
+            margin-bottom: 0;
+        }
+
+        button {
+            background: transparent;
+            color: var(--ink);
+            border: 2px solid var(--ink);
+            padding: 10px 22px;
+            border-radius: 3px;
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 14px;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            box-shadow: 2px 2px 0 var(--sepia);
+            transition: background 0.15s, color 0.15s, box-shadow 0.1s, transform 0.1s;
+        }
+
+        button:hover {
+            background: var(--ink);
+            color: var(--paper);
+            box-shadow: none;
+            transform: translate(2px, 2px);
+        }
+
+        button:active {
+            transform: translate(2px, 2px);
+            box-shadow: none;
+        }
+
+        button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 2px 2px 0 var(--sepia-light);
+            border-color: var(--sepia-light);
+            color: var(--sepia-light);
+        }
+
+        /* Tab styles — folder tabs */
+        .tabs {
+            display: flex;
+            gap: 0;
+            justify-content: center;
+            border-bottom: 2px solid var(--sepia-light);
+            margin-bottom: 24px;
+        }
+
+        .tabs button {
+            padding: 8px 24px;
+            background: var(--parchment);
+            color: var(--sepia);
+            border: 1px solid var(--sepia-light);
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            font-size: 0.9em;
+            box-shadow: none;
+            transform: none;
+            position: relative;
+            bottom: -2px;
+            margin: 0 2px;
+            letter-spacing: 0.06em;
+        }
+
+        .tabs button:hover {
+            background: var(--paper);
+            color: var(--ink);
+            box-shadow: none;
+            transform: none;
+        }
+
+        .tabs button.active {
+            background: var(--paper);
+            color: var(--ink);
+            border-bottom: 2px solid var(--paper);
+            font-weight: 600;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Sudoku board */
         .sudoku-board {
             display: grid;
             grid-template-columns: repeat(9, 1fr);
+            grid-template-rows: repeat(9, 1fr);
             gap: 0;
-            border: 3px solid #333;
-            background: #333;
-            width: 100%;
-            max-width: 500px;
-            aspect-ratio: 1;
+            border: 3px solid var(--ink);
+            background: var(--ink);
+            width: 360px;
+            height: 360px;
+            flex-shrink: 0;
         }
 
         .cell {
-            background: white;
-            border: 1px solid #ddd;
+            background: var(--paper);
+            border: 1px solid var(--sepia-light);
             display: flex;
             align-items: center;
             justify-content: center;
+            font-family: Georgia, 'Times New Roman', serif;
             font-size: 1.5em;
-            font-weight: 600;
-            color: #333;
-            transition: background-color 0.2s;
+            font-weight: normal;
+            color: var(--ink);
+            transition: background-color 0.15s;
+            min-height: 0;
+            min-width: 0;
         }
 
         .cell:hover {
-            background-color: #f0f0f0;
+            background-color: #f0e8d8;
+        }
+
+        .cell.clue {
+            font-weight: 700;
+            color: var(--clue-color);
+            background-color: var(--paper);
+        }
+
+        .cell.empty {
+            color: transparent;
+        }
+
+        /* Note cells must not inherit transparent (would hide digits 7,8,9 and others) */
+        .cell.empty.note-mode {
+            color: var(--sepia);
+        }
+
+        .cell input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: inherit;
+            font-weight: normal;
+            text-align: center;
+            color: var(--user-color);
+            caret-color: transparent;
+            outline: none;
+            cursor: default;
+        }
+
+        /* Playing board: highlight all cells showing the selected number */
+        #playingBoard .cell.highlight-number,
+        #experimentBoard .cell.highlight-number {
+            background-color: #ede0c4;
+        }
+
+        #playingBoard .cell.highlight-number:hover,
+        #experimentBoard .cell.highlight-number:hover {
+            background-color: #e0d0b0;
+        }
+
+        #playingBoard .cell.clue,
+        #experimentBoard .cell.clue {
+            cursor: pointer;
+        }
+
+        /* Note-taking: 3x3 grid – small, light candidate digits (pencil style) */
+        .cell-notes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            place-items: center;
+            padding: 2px;
+            box-sizing: border-box;
+            font-size: 10px;
+            font-weight: 200;
+            color: var(--sepia);
+            pointer-events: none;
+        }
+
+        .cell-notes span {
+            min-width: 1ch;
+            color: var(--sepia);
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 10px;
+            font-weight: 200;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cell.note-mode {
+            padding: 0;
+            overflow: visible;
+            cursor: default;
+        }
+
+        .cell.note-mode .cell-notes {
+            pointer-events: auto;
+        }
+
+        .board-column-spacer {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* Pen / Pencil icon buttons */
+        .pen-pencil-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            min-height: 40px;
+        }
+
+        .pen-pencil-wrap .icon-btn {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1em;
+            border-radius: 3px;
+            background: transparent;
+            color: var(--sepia);
+            border: 1px solid var(--sepia-light);
+            box-shadow: 1px 1px 0 var(--sepia-light);
+        }
+
+        .pen-pencil-wrap .icon-btn:hover {
+            background: var(--parchment);
+            color: var(--ink);
+            box-shadow: none;
+            transform: translate(1px, 1px);
+        }
+
+        .pen-pencil-wrap .icon-btn.active {
+            background: var(--ink);
+            color: var(--paper);
+            border-color: var(--ink);
+            box-shadow: none;
+        }
+
+        /* Cell focus / selected */
+        .cell:focus-within {
+            background: #f5e8c8;
+            box-shadow: inset 0 0 0 2px var(--sepia);
+        }
+
+        .cell.note-mode:focus {
+            background: #f5e8c8;
+            box-shadow: inset 0 0 0 2px var(--sepia);
+        }
+
+        /* Wrong answer */
+        .cell input.wrong {
+            background: var(--wrong-bg);
+            color: var(--wrong-color);
         }
 
         /* Thicker borders for 3x3 boxes */
         .cell:nth-child(3n) {
-            border-right: 2px solid #333;
+            border-right: 2px solid var(--ink);
         }
 
         .cell:nth-child(n+19):nth-child(-n+27),
         .cell:nth-child(n+46):nth-child(-n+54) {
-            border-bottom: 2px solid #333;
+            border-bottom: 2px solid var(--ink);
         }
 
         .loading {
             text-align: center;
-            color: #667eea;
-            font-size: 18px;
+            color: var(--sepia);
+            font-style: italic;
+            font-size: 16px;
             margin: 20px 0;
         }
 
         .error {
             text-align: center;
-            color: #e74c3c;
+            color: var(--wrong-color);
             margin: 20px 0;
             padding: 10px;
-            background: #ffeaea;
-            border-radius: 8px;
+            background: var(--wrong-bg);
+            border: 1px solid #d4a0a0;
+            border-radius: 4px;
+        }
+
+        .mode-hint {
+            text-align: center;
+            color: var(--sepia);
+            font-style: italic;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .cell.clickable {
+            cursor: pointer;
+        }
+
+        .cell.removed {
+            color: transparent;
+            background: #f5eee0;
+        }
+
+        .cell.removed::after {
+            content: '';
+            display: block;
+        }
+
+        #uniquenessNote {
+            margin-top: 16px;
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-style: italic;
+            text-align: center;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid transparent;
+        }
+
+        #uniquenessNote.unique {
+            background: var(--unique-bg);
+            color: var(--unique-color);
+            border-color: #a8c89a;
+        }
+
+        #uniquenessNote.not-unique {
+            background: #fdf5e4;
+            color: var(--sepia);
+            border-color: var(--sepia-light);
+        }
+
+        #uniquenessNote:empty,
+        #uniquenessNote.hidden {
+            display: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #experimentStatus:not(.hidden) {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.25s, color 0.25s, border-color 0.25s;
+        }
+
+        @keyframes exp-spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .status-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid currentColor;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: exp-spin 0.7s linear infinite;
+            flex-shrink: 0;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 800px) {
+            .sudoku-board {
+                width: 300px;
+                height: 300px;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .boards-row {
+                flex-direction: column;
+                align-items: center;
+            }
         }
 
         @media (max-width: 600px) {
@@ -141,6 +509,11 @@
                 font-size: 2em;
             }
 
+            .sudoku-board {
+                width: 280px;
+                height: 280px;
+            }
+
             .cell {
                 font-size: 1.2em;
             }
@@ -149,105 +522,652 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎯 Sudoku Generator</h1>
+        <h1>✦ Sudoku Generator</h1>
         
-        <div class="controls">
-            <button id="generateBtn">Generate New Board</button>
-            <button id="generateMultipleBtn">Generate 5 Boards</button>
+        <div class="tabs">
+            <button type="button" id="tabPlay" class="active">Play</button>
+            <button type="button" id="tabExperiment">Experiment</button>
         </div>
 
         <div id="loading" class="loading" style="display: none;">
-            Generating...
+            Loading...
         </div>
 
         <div id="error" class="error" style="display: none;"></div>
 
-        <div class="sudoku-container">
-            <div id="sudokuBoard" class="sudoku-board"></div>
+        <div id="panelPlay" class="tab-panel active">
+            <div class="controls">
+                <button id="newSolutionBtn">New solution</button>
+            </div>
+            <div class="boards-row">
+                <div class="board-column">
+                    <h2>Solution Sudoku</h2>
+                    <p class="mode-hint" style="margin-bottom: 8px;">Click a cell to remove its digit; click again to restore.</p>
+                    <div class="pen-pencil-wrap board-column-spacer" aria-hidden="true"></div>
+                    <div class="sudoku-container">
+                        <div id="solutionBoard" class="sudoku-board"></div>
+                    </div>
+                    <div id="uniquenessNote" class="hidden"></div>
+                </div>
+                <div class="board-column">
+                    <h2>Playing Sudoku</h2>
+                    <p class="mode-hint" style="margin-bottom: 8px;">Update the board from the solution, then fill in the empty cells.</p>
+                    <div class="pen-pencil-wrap">
+                        <button type="button" id="playPenBtn" class="icon-btn active" title="Pen – type answer in cell">✒</button>
+                        <button type="button" id="playPencilBtn" class="icon-btn" title="Pencil – add notes (1–9 in positions)">✎</button>
+                    </div>
+                    <div class="sudoku-container">
+                        <div id="playingBoard" class="sudoku-board"></div>
+                    </div>
+                    <div class="controls">
+                        <button id="updatePlayingBtn">Update playing board</button>
+                        <button id="checkBtn">Check</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="panelExperiment" class="tab-panel">
+            <h2 style="text-align: center; margin-bottom: 12px;">Experiment Sudoku</h2>
+            <p class="mode-hint" style="margin-bottom: 8px;">Add digits to create a puzzle. Below you’ll see if it has one solution (playable) or not.</p>
+            <div class="pen-pencil-wrap" style="justify-content: center;">
+                <button type="button" id="expPenBtn" class="icon-btn active" title="Pen – type answer in cell">✒</button>
+                <button type="button" id="expPencilBtn" class="icon-btn" title="Pencil – add notes">✎</button>
+            </div>
+            <div class="sudoku-container">
+                <div id="experimentBoard" class="sudoku-board"></div>
+            </div>
+            <div id="experimentStatus" class="hidden" style="margin-top: 16px; padding: 10px 14px; border-radius: 4px; font-size: 13px; font-style: italic; text-align: center;"></div>
+            <div class="controls" style="margin-top: 12px;">
+                <button id="experimentClearBtn">Clear sudoku</button>
+                <button id="experimentCheckBtn" disabled>Check solution</button>
+            </div>
         </div>
     </div>
 
     <script>
-        const generateBtn = document.getElementById('generateBtn');
-        const generateMultipleBtn = document.getElementById('generateMultipleBtn');
-        const sudokuBoard = document.getElementById('sudokuBoard');
-        const loading = document.getElementById('loading');
-        const error = document.getElementById('error');
+        // ── DOM references ─────────────────────────────────────────────────────
+        const solutionBoardEl  = document.getElementById('solutionBoard');
+        const playingBoardEl   = document.getElementById('playingBoard');
+        const experimentBoardEl = document.getElementById('experimentBoard');
+        const loading          = document.getElementById('loading');
+        const error            = document.getElementById('error');
+        const uniquenessNote   = document.getElementById('uniquenessNote');
+        const checkBtn         = document.getElementById('checkBtn');
+        const newSolutionBtn   = document.getElementById('newSolutionBtn');
+        const updatePlayingBtn = document.getElementById('updatePlayingBtn');
+        const experimentStatusEl  = document.getElementById('experimentStatus');
+        const experimentCheckBtn  = document.getElementById('experimentCheckBtn');
 
-        function hideError() {
-            error.style.display = 'none';
+        // ── Page-level state ───────────────────────────────────────────────────
+        let currentFullBoard      = null;
+        let experimentSolution    = null;
+        let experimentCheckTimeout = null;
+
+        // ── Error helpers ──────────────────────────────────────────────────────
+        function hideError() { error.style.display = 'none'; }
+        function showError(msg) { error.textContent = msg; error.style.display = 'block'; }
+
+        // ── Navigation utilities ───────────────────────────────────────────────
+        function moveFocusToCell(boardEl, row, col) {
+            const cell = boardEl.children[row * 9 + col];
+            if (!cell) return;
+            const input = cell.querySelector('input');
+            if (input) input.focus(); else cell.focus();
         }
 
-        function showError(message) {
-            error.textContent = message;
-            error.style.display = 'block';
+        function handleBoardArrowKey(boardEl, e) {
+            if (!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) return;
+            const cell = document.activeElement.closest && document.activeElement.closest('.cell');
+            if (!cell || !boardEl.contains(cell)) return;
+            let row = parseInt(cell.dataset.row, 10), col = parseInt(cell.dataset.col, 10);
+            if (isNaN(row) || isNaN(col)) return;
+            if (e.key === 'ArrowLeft')  col--;
+            else if (e.key === 'ArrowRight') col++;
+            else if (e.key === 'ArrowUp')    row--;
+            else if (e.key === 'ArrowDown')  row++;
+            if (row < 0 || row > 8 || col < 0 || col > 8) return;
+            e.preventDefault();
+            moveFocusToCell(boardEl, row, col);
         }
 
-        function renderBoard(board) {
-            sudokuBoard.innerHTML = '';
+        // ── SudokuBoard class ──────────────────────────────────────────────────
+        class SudokuBoard {
+            constructor(boardEl, { onCellChange } = {}) {
+                this._el           = boardEl;
+                this._onCellChange = onCellChange || null;
+                this._noteMode     = false;
+                this._highlighted  = null;
+                this._puzzle       = null;  // 9x9 or null (null = fully editable)
+                this._solution     = null;
+                this._cellData     = null;  // 9x9 of {submission, notes, displayMode}
+            }
+
+            // ── Public API ─────────────────────────────────────────────────────
+
+            /** Render the board. puzzle=null means every cell is editable (experiment). */
+            render(puzzle, solution, savedCellData) {
+                this._puzzle    = puzzle;
+                this._solution  = solution;
+                this._highlighted = null;
+
+                if (savedCellData) {
+                    this._cellData = savedCellData;
+                } else {
+                    this._cellData = [];
+                    for (let i = 0; i < 9; i++) {
+                        this._cellData[i] = [];
+                        for (let j = 0; j < 9; j++) {
+                            const isClue = puzzle && puzzle[i][j] !== 0;
+                            this._cellData[i][j] = isClue
+                                ? null
+                                : { submission: 0, notes: [], displayMode: undefined };
+                        }
+                    }
+                }
+
+                this._el.innerHTML = '';
+                for (let i = 0; i < 9; i++) {
+                    for (let j = 0; j < 9; j++) {
+                        const value = puzzle ? puzzle[i][j] : 0;
+                        const cell  = document.createElement('div');
+                        cell.className  = 'cell ' + (value !== 0 ? 'clue' : 'empty');
+                        cell.dataset.row = i;
+                        cell.dataset.col = j;
+                        if (value !== 0) {
+                            this._createClueCell(cell, value);
+                        } else {
+                            this._createEditableCell(cell, i, j, this._cellData[i][j]);
+                        }
+                        this._el.appendChild(cell);
+                    }
+                }
+            }
+
+            /** Toggle pen/pencil mode, preserving all user input. */
+            setNoteMode(enabled) {
+                this._noteMode = enabled;
+                if (!this._el.children.length) return;
+                const prev = this._readStateFromDOM();
+                // Blank cells adopt the new mode; filled cells keep their explicit mode.
+                prev.forEach(row => {
+                    if (!row) return;
+                    row.forEach(cd => {
+                        if (cd && cd.submission === 0 && (!cd.notes || cd.notes.length === 0))
+                            cd.displayMode = undefined;
+                    });
+                });
+                this.render(this._puzzle, this._solution, prev);
+            }
+
+            /** Return the current 9×9 grid of submitted values (0 = empty). */
+            getGrid() {
+                const grid = [];
+                for (let i = 0; i < 9; i++) {
+                    grid[i] = [];
+                    for (let j = 0; j < 9; j++) {
+                        if (this._puzzle && this._puzzle[i][j] !== 0) {
+                            grid[i][j] = this._puzzle[i][j];
+                        } else {
+                            const cd = this._cellData && this._cellData[i][j];
+                            grid[i][j] = cd ? (cd.submission || 0) : 0;
+                        }
+                    }
+                }
+                return grid;
+            }
+
+            /** Update .highlight-number classes to match this._highlighted. */
+            refreshHighlight() {
+                const cells = this._el.querySelectorAll('.cell');
+                cells.forEach(c => c.classList.remove('highlight-number'));
+                if (this._highlighted === null) return;
+                cells.forEach(c => {
+                    if (this._getCellDisplayValue(c) === this._highlighted)
+                        c.classList.add('highlight-number');
+                });
+            }
+
+            // ── Static utilities ───────────────────────────────────────────────
+
+            static boardsEqual(a, b) {
+                for (let i = 0; i < 9; i++)
+                    for (let j = 0; j < 9; j++)
+                        if (a[i][j] !== b[i][j]) return false;
+                return true;
+            }
+
+            static hasBoardConflicts(board) {
+                for (let i = 0; i < 9; i++) {
+                    const rs = {}, cs = {};
+                    for (let j = 0; j < 9; j++) {
+                        const rv = board[i][j], cv = board[j][i];
+                        if (rv) { if (rs[rv]) return true; rs[rv] = true; }
+                        if (cv) { if (cs[cv]) return true; cs[cv] = true; }
+                    }
+                }
+                for (let br = 0; br < 3; br++) {
+                    for (let bc = 0; bc < 3; bc++) {
+                        const bs = {};
+                        for (let r = br*3; r < br*3+3; r++)
+                            for (let c = bc*3; c < bc*3+3; c++) {
+                                const v = board[r][c];
+                                if (v) { if (bs[v]) return true; bs[v] = true; }
+                            }
+                    }
+                }
+                return false;
+            }
+
+            // ── Private methods ────────────────────────────────────────────────
+
+            _createClueCell(cell, value) {
+                cell.textContent = value;
+                cell.addEventListener('click', () => {
+                    const num = parseInt(cell.textContent.trim(), 10);
+                    if (num < 1 || num > 9) return;
+                    this._highlighted = (this._highlighted === num) ? null : num;
+                    this.refreshHighlight();
+                });
+            }
+
+            _createEditableCell(cell, row, col, data) {
+                const mode = (data.displayMode != null)
+                    ? data.displayMode
+                    : (this._noteMode ? 'pencil' : 'pen');
+
+                if (mode === 'pencil') {
+                    this._makeNotesGrid(data, cell, row, col);
+                    cell.addEventListener('click', () => {
+                        const sub = parseInt(cell.dataset.submission, 10);
+                        this._highlighted = (sub >= 1 && sub <= 9)
+                            ? (this._highlighted === sub ? null : sub)
+                            : null;
+                        this.refreshHighlight();
+                    });
+                } else {
+                    const input = document.createElement('input');
+                    input.type       = 'text';
+                    input.inputMode  = 'numeric';
+                    input.maxLength  = 1;
+                    input.value      = data.submission > 0 ? String(data.submission) : '';
+                    input.dataset.row = row;
+                    input.dataset.col = col;
+                    SudokuBoard._setupCellInput(input);
+                    input.addEventListener('keypress', SudokuBoard._onlyDigit);
+                    input.addEventListener('input', () => {
+                        input.value = input.value.replace(/[^1-9]/g, '');
+                        const r = parseInt(input.dataset.row, 10);
+                        const c = parseInt(input.dataset.col, 10);
+                        this._cellData[r][c].submission  = input.value === '' ? 0 : parseInt(input.value, 10);
+                        this._cellData[r][c].displayMode = 'pen';
+                        this.refreshHighlight();
+                        if (this._onCellChange) this._onCellChange();
+                    });
+                    input.addEventListener('click', () => {
+                        const v = input.value.trim();
+                        const num = v === '' ? null : parseInt(v, 10);
+                        this._highlighted = (num && this._highlighted === num) ? null : num;
+                        this.refreshHighlight();
+                    });
+                    cell.appendChild(input);
+                }
+
+                // Double-click toggles this cell between pen and pencil.
+                // `row` and `col` are `let`-scoped per iteration — no IIFE needed.
+                cell.addEventListener('dblclick', () => {
+                    const prev = this._readStateFromDOM();
+                    if (!prev[row][col]) return;
+                    prev[row][col].displayMode =
+                        (prev[row][col].displayMode === 'pencil') ? 'pen' : 'pencil';
+                    this.render(this._puzzle, this._solution, prev);
+                });
+            }
+
+            /** Build the 3×3 pencil-notes grid inside a cell. */
+            _makeNotesGrid(cellData, cell, row, col) {
+                const notes = cellData.notes.slice();
+                const order = [1,2,3,4,5,6,7,8,9];
+                const div   = document.createElement('div');
+                div.className = 'cell-notes';
+                for (let k = 0; k < 9; k++) {
+                    const span = document.createElement('span');
+                    span.textContent = notes.includes(order[k]) ? order[k] : '';
+                    div.appendChild(span);
+                }
+                cell.appendChild(div);
+                cell.tabIndex = 0;
+                cell.classList.add('note-mode');
+                cell.dataset.notes      = notes.slice().sort().join(',');
+                cell.dataset.submission = String(cellData.submission || 0);
+
+                cell.addEventListener('keydown', (e) => {
+                    if (!/^[1-9]$/.test(e.key)) return;
+                    e.preventDefault();
+                    const n = parseInt(e.key, 10);
+                    if (!this._noteMode) {
+                        // Global mode is pen — convert this cell to a pen cell.
+                        this._cellData[row][col].submission  = n;
+                        this._cellData[row][col].notes       = [];
+                        this._cellData[row][col].displayMode = 'pen';
+                        this.render(this._puzzle, this._solution, this._cellData);
+                        if (this._onCellChange) this._onCellChange();
+                        return;
+                    }
+                    // Toggle note digit.
+                    const idx = notes.indexOf(n);
+                    if (idx >= 0) notes.splice(idx, 1); else notes.push(n);
+                    notes.sort();
+                    cellData.notes          = notes.slice();
+                    cell.dataset.notes      = notes.join(',');
+                    div.childNodes[order.indexOf(n)].textContent =
+                        notes.includes(n) ? String(n) : '';
+                });
+            }
+
+            /** Read the digit shown in any cell type (clue / pen / pencil). */
+            _getCellDisplayValue(cell) {
+                if (cell.classList.contains('clue')) {
+                    const t = cell.textContent.trim();
+                    return t === '' ? null : parseInt(t, 10);
+                }
+                const input = cell.querySelector('input');
+                if (input) {
+                    const v = input.value.trim();
+                    return v === '' ? null : parseInt(v, 10);
+                }
+                const sub = parseInt(cell.dataset.submission, 10);
+                return (sub >= 1 && sub <= 9) ? sub : null;
+            }
+
+            /** Serialise current DOM state back to a cellData array. */
+            _readStateFromDOM() {
+                const data  = [];
+                const cells = this._el.querySelectorAll('.cell');
+                for (let i = 0; i < 9; i++) {
+                    data[i] = [];
+                    for (let j = 0; j < 9; j++) {
+                        const cell = cells[i * 9 + j];
+                        if (cell.classList.contains('clue')) { data[i][j] = null; continue; }
+                        const input   = cell.querySelector('input');
+                        const notesEl = cell.querySelector('.cell-notes');
+                        let submission = 0, notes = [], displayMode = this._noteMode ? 'pencil' : 'pen';
+                        if (input) {
+                            const v = input.value.trim();
+                            submission  = v === '' ? 0 : parseInt(v, 10);
+                            displayMode = 'pen';
+                        } else if (notesEl) {
+                            displayMode = 'pencil';
+                            submission  = parseInt(cell.dataset.submission, 10) || 0;
+                            if (cell.dataset.notes)
+                                notes = cell.dataset.notes.split(',')
+                                    .map(x => parseInt(x.trim(), 10))
+                                    .filter(n => n >= 1 && n <= 9);
+                        }
+                        data[i][j] = { submission, notes, displayMode };
+                    }
+                }
+                return data;
+            }
+
+            static _onlyDigit(e) {
+                const key = e.key;
+                if (['Backspace','Tab','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)) return;
+                if (!/^[1-9]$/.test(key)) e.preventDefault();
+            }
+
+            static _setupCellInput(input) {
+                // Clear existing digit when a new one is typed (avoids maxLength block).
+                input.addEventListener('keydown', function(e) {
+                    if (/^[1-9]$/.test(e.key) && this.value !== '') this.value = '';
+                });
+                // Select all on focus so clicking a filled cell makes it instantly editable.
+                input.addEventListener('focus', function() { this.select(); });
+            }
+        }
+
+        // ── Board instances ────────────────────────────────────────────────────
+        const playBoard = new SudokuBoard(playingBoardEl,    { onCellChange: null });
+        const expBoard  = new SudokuBoard(experimentBoardEl, { onCellChange: () => scheduleExperimentCheck() });
+
+        // ── Solution board (click-to-remove behaviour, kept separate) ──────────
+        function getSolutionBoardState() {
+            const grid = [], cells = solutionBoardEl.querySelectorAll('.cell');
+            for (let i = 0; i < 9; i++) {
+                grid[i] = [];
+                for (let j = 0; j < 9; j++) {
+                    const cell = cells[i * 9 + j];
+                    grid[i][j] = cell.dataset.removed === 'true' ? 0 : parseInt(cell.dataset.value, 10);
+                }
+            }
+            return grid;
+        }
+
+        function hasAnyRemoved() {
+            return solutionBoardEl.querySelectorAll('.cell[data-removed="true"]').length > 0;
+        }
+
+        async function checkAndShowUniqueness() {
+            if (!currentFullBoard || !hasAnyRemoved()) {
+                uniquenessNote.classList.add('hidden');
+                uniquenessNote.textContent = '';
+                return;
+            }
+            try {
+                const response = await fetch('/api/check-uniqueness', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ board: getSolutionBoardState() })
+                });
+                if (!response.ok) return;
+                const data = await response.json();
+                uniquenessNote.classList.remove('hidden', 'unique', 'not-unique');
+                if (data.unique) {
+                    uniquenessNote.classList.add('unique');
+                    uniquenessNote.textContent = 'With the removed digit(s), the puzzle still has exactly one solution.';
+                } else {
+                    uniquenessNote.classList.add('not-unique');
+                    uniquenessNote.textContent = 'With the removed digit(s), the puzzle no longer has a unique solution (multiple or no solutions).';
+                }
+            } catch (err) {
+                uniquenessNote.classList.remove('unique', 'not-unique');
+                uniquenessNote.textContent = 'Could not check uniqueness.';
+            }
+        }
+
+        function renderSolutionBoard(board) {
+            currentFullBoard = board;
+            uniquenessNote.classList.add('hidden');
+            uniquenessNote.textContent = '';
+            solutionBoardEl.innerHTML = '';
             for (let i = 0; i < 9; i++) {
                 for (let j = 0; j < 9; j++) {
                     const cell = document.createElement('div');
-                    cell.className = 'cell';
-                    cell.textContent = board[i][j];
-                    sudokuBoard.appendChild(cell);
+                    cell.className       = 'cell clue clickable';
+                    cell.dataset.row     = i;
+                    cell.dataset.col     = j;
+                    cell.dataset.value   = board[i][j];
+                    cell.dataset.removed = 'false';
+                    cell.textContent     = board[i][j];
+                    cell.addEventListener('click', async function() {
+                        if (cell.dataset.removed === 'true') {
+                            cell.dataset.removed = 'false';
+                            cell.textContent = cell.dataset.value;
+                            cell.classList.remove('removed');
+                        } else {
+                            cell.dataset.removed = 'true';
+                            cell.textContent = '';
+                            cell.classList.add('removed');
+                        }
+                        await checkAndShowUniqueness();
+                    });
+                    solutionBoardEl.appendChild(cell);
                 }
             }
         }
 
-        async function generateBoard() {
+        // ── Experiment uniqueness check ────────────────────────────────────────
+        function showExpConflictError() {
+            experimentStatusEl.classList.remove('hidden');
+            experimentStatusEl.innerHTML = '✕ Invalid — duplicate digit in row, column, or box';
+            experimentStatusEl.style.background  = '#f5e6e6';
+            experimentStatusEl.style.color       = '#8b3a3a';
+            experimentStatusEl.style.borderColor = '#d4a8a8';
+        }
+
+        function scheduleExperimentCheck() {
+            if (experimentCheckTimeout) clearTimeout(experimentCheckTimeout);
+            const board  = expBoard.getGrid();
+            const hasAny = board.some(row => row.some(v => v !== 0));
+            if (!hasAny) { experimentStatusEl.classList.add('hidden'); return; }
+            if (SudokuBoard.hasBoardConflicts(board)) { showExpConflictError(); return; }
+            experimentStatusEl.classList.remove('hidden');
+            experimentStatusEl.innerHTML         = '<span class="status-spinner"></span> Checking\u2026';
+            experimentStatusEl.style.background  = 'transparent';
+            experimentStatusEl.style.color       = 'var(--sepia-light)';
+            experimentStatusEl.style.borderColor = 'transparent';
+            experimentCheckTimeout = setTimeout(checkExperimentUniqueness, 600);
+        }
+
+        async function checkExperimentUniqueness() {
+            const board  = expBoard.getGrid();
+            const hasAny = board.some(row => row.some(v => v !== 0));
+            experimentSolution = null;
+            experimentCheckBtn.disabled = true;
+            if (!hasAny) { experimentStatusEl.classList.add('hidden'); return; }
+            if (SudokuBoard.hasBoardConflicts(board)) { showExpConflictError(); return; }
+            experimentStatusEl.classList.remove('hidden');
+            if (!experimentStatusEl.querySelector('.status-spinner')) {
+                experimentStatusEl.innerHTML         = '<span class="status-spinner"></span> Checking\u2026';
+                experimentStatusEl.style.background  = 'transparent';
+                experimentStatusEl.style.color       = 'var(--sepia-light)';
+                experimentStatusEl.style.borderColor = 'transparent';
+            }
+            try {
+                const res = await fetch('/api/check-uniqueness', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ board })
+                });
+                if (!res.ok) throw new Error('bad response');
+                const data = await res.json();
+                if (data.unique) {
+                    experimentStatusEl.innerHTML         = '✓ One solution — ready to play';
+                    experimentStatusEl.style.background  = '#e8f0e4';
+                    experimentStatusEl.style.color       = '#3a5c2a';
+                    experimentStatusEl.style.borderColor = '#a8c89a';
+                    experimentCheckBtn.disabled = false;
+                    const solRes = await fetch('/api/solve', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ board })
+                    });
+                    if (solRes.ok) experimentSolution = (await solRes.json()).solution;
+                } else {
+                    experimentStatusEl.innerHTML         = '⚠ Multiple solutions or none';
+                    experimentStatusEl.style.background  = '#fdf5e4';
+                    experimentStatusEl.style.color       = '#7a5230';
+                    experimentStatusEl.style.borderColor = 'var(--sepia-light)';
+                }
+            } catch (err) {
+                experimentStatusEl.innerHTML         = '✕ Could not check';
+                experimentStatusEl.style.background  = '#f5e6e6';
+                experimentStatusEl.style.color       = '#8b3a3a';
+                experimentStatusEl.style.borderColor = '#d4a8a8';
+            }
+        }
+
+        // ── Play-board actions ─────────────────────────────────────────────────
+        function checkAnswer() {
+            if (!playBoard._solution) return;
+            if (SudokuBoard.boardsEqual(playBoard.getGrid(), playBoard._solution))
+                alert('Correct! Well done.');
+            else
+                alert("That's wrong. Keep trying.");
+        }
+
+        function updatePlayingBoard() {
+            if (!currentFullBoard) return;
+            playBoard.render(getSolutionBoardState(), currentFullBoard);
+        }
+
+        async function loadNewSolution() {
             hideError();
             loading.style.display = 'block';
-            generateBtn.disabled = true;
-            generateMultipleBtn.disabled = true;
-
+            newSolutionBtn.disabled = true;
             try {
-                const response = await fetch('/api/generate');
-                if (!response.ok) {
-                    throw new Error('Failed to generate board');
-                }
-                const data = await response.json();
-                renderBoard(data.board);
+                const res = await fetch('/api/generate');
+                if (!res.ok) throw new Error('Failed to load board');
+                const board = (await res.json()).board;
+                renderSolutionBoard(board);
+                playBoard.render(board, board);
             } catch (err) {
-                showError('Error generating board: ' + err.message);
+                showError('Error loading board: ' + err.message);
             } finally {
                 loading.style.display = 'none';
-                generateBtn.disabled = false;
-                generateMultipleBtn.disabled = false;
+                newSolutionBtn.disabled = false;
             }
         }
 
-        async function generateMultiple() {
-            hideError();
-            loading.style.display = 'block';
-            generateBtn.disabled = true;
-            generateMultipleBtn.disabled = true;
-
-            try {
-                const response = await fetch('/api/generate/5');
-                if (!response.ok) {
-                    throw new Error('Failed to generate boards');
-                }
-                const data = await response.json();
-                // Show the first board, but you could enhance this to cycle through them
-                if (data.boards && data.boards.length > 0) {
-                    renderBoard(data.boards[0]);
-                    alert(`Generated ${data.boards.length} boards! Displaying the first one.`);
-                }
-            } catch (err) {
-                showError('Error generating boards: ' + err.message);
-            } finally {
-                loading.style.display = 'none';
-                generateBtn.disabled = false;
-                generateMultipleBtn.disabled = false;
-            }
+        function switchTab(tabName) {
+            document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            const tab   = tabName === 'play' ? 'tabPlay'   : 'tabExperiment';
+            const panel = tabName === 'play' ? 'panelPlay' : 'panelExperiment';
+            document.getElementById(tab).classList.add('active');
+            document.getElementById(panel).classList.add('active');
         }
 
-        generateBtn.addEventListener('click', generateBoard);
-        generateMultipleBtn.addEventListener('click', generateMultiple);
+        function experimentCheckAnswer() {
+            if (!experimentSolution) return;
+            if (SudokuBoard.boardsEqual(expBoard.getGrid(), experimentSolution))
+                alert('Correct! Well done.');
+            else
+                alert("That's wrong. Keep trying.");
+        }
 
-        // Generate initial board on page load
-        generateBoard();
+        // ── Event wiring ───────────────────────────────────────────────────────
+        document.getElementById('tabPlay').addEventListener('click', () => switchTab('play'));
+        document.getElementById('tabExperiment').addEventListener('click', () => switchTab('experiment'));
+
+        document.getElementById('playPenBtn').addEventListener('click', function() {
+            playBoard.setNoteMode(false);
+            this.classList.add('active');
+            document.getElementById('playPencilBtn').classList.remove('active');
+        });
+        document.getElementById('playPencilBtn').addEventListener('click', function() {
+            playBoard.setNoteMode(true);
+            this.classList.add('active');
+            document.getElementById('playPenBtn').classList.remove('active');
+        });
+
+        document.getElementById('expPenBtn').addEventListener('click', function() {
+            expBoard.setNoteMode(false);
+            this.classList.add('active');
+            document.getElementById('expPencilBtn').classList.remove('active');
+        });
+        document.getElementById('expPencilBtn').addEventListener('click', function() {
+            expBoard.setNoteMode(true);
+            this.classList.add('active');
+            document.getElementById('expPenBtn').classList.remove('active');
+        });
+
+        newSolutionBtn.addEventListener('click', loadNewSolution);
+        updatePlayingBtn.addEventListener('click', updatePlayingBoard);
+        checkBtn.addEventListener('click', checkAnswer);
+
+        experimentCheckBtn.addEventListener('click', experimentCheckAnswer);
+        document.getElementById('experimentClearBtn').addEventListener('click', () => {
+            experimentSolution = null;
+            experimentCheckBtn.disabled = true;
+            experimentStatusEl.classList.add('hidden');
+            expBoard.render(null, null);
+        });
+
+        playingBoardEl.addEventListener('keydown',    e => handleBoardArrowKey(playingBoardEl, e));
+        experimentBoardEl.addEventListener('keydown', e => handleBoardArrowKey(experimentBoardEl, e));
+
+        // ── Initialise ─────────────────────────────────────────────────────────
+        expBoard.render(null, null);
+        loadNewSolution();
     </script>
 </body>
 </html>
