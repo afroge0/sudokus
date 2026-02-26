@@ -462,6 +462,22 @@
             display: none !important;
         }
 
+        .difficulty-badge {
+            font-size: 0.78em;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 2px 12px;
+            border-radius: 3px;
+            border: 1px solid var(--sepia-light);
+            color: var(--sepia);
+            margin-bottom: 8px;
+            font-style: normal;
+        }
+        .difficulty-badge.easy   { background: #e8f0e4; color: #3a5c2a; border-color: #a8c89a; }
+        .difficulty-badge.medium { background: #fdf5e4; color: #7a5230; border-color: #c4a060; }
+        .difficulty-badge.hard   { background: #f5e8e8; color: #7a3030; border-color: #c8a0a0; }
+        .difficulty-badge.expert { background: #f0dede; color: #5a1010; border-color: #8b3a3a; }
+
         #experimentStatus:not(.hidden) {
             display: flex;
             align-items: center;
@@ -522,7 +538,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>✦ Sudoku Generator</h1>
+        <h1>Sudoku Gen</h1>
         
         <div class="tabs">
             <button type="button" id="tabPlay" class="active">Play</button>
@@ -551,6 +567,7 @@
                 </div>
                 <div class="board-column">
                     <h2>Playing Sudoku</h2>
+                    <p id="playDifficulty" class="difficulty-badge hidden"></p>
                     <p class="mode-hint" style="margin-bottom: 8px;">Update the board from the solution, then fill in the empty cells.</p>
                     <div class="pen-pencil-wrap">
                         <button type="button" id="playPenBtn" class="icon-btn active" title="Pen – type answer in cell">✒</button>
@@ -1086,7 +1103,22 @@
 
         function updatePlayingBoard() {
             if (!currentFullBoard) return;
-            playBoard.render(getSolutionBoardState(), currentFullBoard);
+            const puzzle = getSolutionBoardState();
+            playBoard.render(puzzle, currentFullBoard);
+
+            const emptyCount = puzzle.flat().filter(v => v === 0).length;
+            const diffEl = document.getElementById('playDifficulty');
+            if (emptyCount === 0) {
+                diffEl.className = 'difficulty-badge hidden';
+            } else {
+                let level, cls;
+                if      (emptyCount <= 20) { level = 'Easy';   cls = 'easy'; }
+                else if (emptyCount <= 40) { level = 'Medium'; cls = 'medium'; }
+                else if (emptyCount <= 54) { level = 'Hard';   cls = 'hard'; }
+                else                       { level = 'Expert'; cls = 'expert'; }
+                diffEl.textContent = level;
+                diffEl.className = `difficulty-badge ${cls}`;
+            }
         }
 
         async function loadNewSolution() {
@@ -1099,6 +1131,7 @@
                 const board = (await res.json()).board;
                 renderSolutionBoard(board);
                 playBoard.render(board, board);
+                document.getElementById('playDifficulty').className = 'difficulty-badge hidden';
             } catch (err) {
                 showError('Error loading board: ' + err.message);
             } finally {
