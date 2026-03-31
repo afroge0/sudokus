@@ -47,6 +47,36 @@ def generate_puzzle():
     puzzle, solution = generator.generate_puzzle(clue_count=34)
     return jsonify({'board': puzzle, 'solution': solution})
 
+@app.route('/api/generate-greater-than', methods=['GET'])
+def generate_greater_than():
+    """Generate a Greater Than Sudoku uniquely solvable via sudoku rules + inequalities."""
+    puzzle, solution, h_signs, v_signs = generator.generate_puzzle_gt(target_clues=20)
+    return jsonify({'puzzle': puzzle, 'solution': solution, 'h_signs': h_signs, 'v_signs': v_signs})
+
+@app.route('/api/generate-next-to-nine', methods=['GET'])
+def generate_next_to_nine():
+    """Generate a Next-to-Nine Sudoku puzzle."""
+    puzzle, solution, row_clues, col_clues = generator.generate_puzzle_n2n()
+    return jsonify({'puzzle': puzzle, 'solution': solution, 'row_clues': row_clues, 'col_clues': col_clues})
+
+@app.route('/api/generate-thermo', methods=['GET'])
+def generate_thermo():
+    """Generate a Thermometer Sudoku puzzle."""
+    puzzle, solution, thermos = generator.generate_puzzle_thermo(n_thermos=7, target_clues=20)
+    return jsonify({'puzzle': puzzle, 'solution': solution, 'thermos': thermos})
+
+@app.route('/api/generate-corner', methods=['GET'])
+def generate_corner():
+    """Generate a Quad Clues Sudoku puzzle."""
+    puzzle, solution, corner_clues = generator.generate_puzzle_corner(n_corners=20, target_clues=8)
+    return jsonify({'puzzle': puzzle, 'solution': solution, 'corner_clues': corner_clues})
+
+@app.route('/api/generate-consecutive', methods=['GET'])
+def generate_consecutive():
+    """Generate a Consecutive Sudoku puzzle uniquely solvable via sudoku rules + consecutive markers."""
+    puzzle, solution, h_consec, v_consec = generator.generate_puzzle_consec(target_clues=20)
+    return jsonify({'puzzle': puzzle, 'solution': solution, 'h_consec': h_consec, 'v_consec': v_consec})
+
 @app.route('/api/generate/<int:count>', methods=['GET'])
 def generate_multiple(count):
     """API endpoint to generate multiple Sudoku boards."""
